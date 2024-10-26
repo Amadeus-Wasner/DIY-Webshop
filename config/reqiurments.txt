@@ -1,0 +1,111 @@
+Funktion: Der config/-Ordner speichert Konfigurationsdateien für das gesamte Webshop-System. Diese Dateien enthalten Einstellungen für die Datenbank, E-Mail-Dienste, API-Schlüssel und andere wichtige Parameter. Durch die zentrale Verwaltung dieser Einstellungen wird sichergestellt, dass alle Systemkomponenten auf die gleichen Einstellungen zugreifen können.
+
+Komplette Struktur:
+bash
+Code kopieren
+config/
+├── database.php            # Datenbankverbindung und -einstellungen
+├── mail.php                # E-Mail-Konfiguration für den Versand von Bestätigungen
+├── auth.php                # Authentifizierungseinstellungen (z.B. Hashing-Methoden)
+├── app.php                 # Allgemeine Anwendungsparameter und Umgebungsvariablen
+└── payment.php             # Konfiguration für Zahlungen (optional, falls benötigt)
+Detaillierte Erklärung der Struktur:
+1. database.php (Datenbankverbindung)
+
+Funktion: Diese Datei verwaltet die Verbindung zur MySQL-Datenbank. Sie stellt sicher, dass alle Datenbankabfragen auf die richtige Datenbank zugreifen, und enthält sensible Informationen wie den Host, den Datenbanknamen, den Benutzernamen und das Passwort.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+$host = getenv('DB_HOST');      // "localhost" oder der Name des Hosts
+$dbname = getenv('DB_NAME');    // Name der Datenbank
+$username = getenv('DB_USER');  // Benutzername der Datenbank
+$password = getenv('DB_PASS');  // Passwort der Datenbank
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Verbindung zur Datenbank fehlgeschlagen: " . $e->getMessage());
+}
+Warum das wichtig ist: Diese Datei wird von deinem gesamten Code aufgerufen, wenn du eine Verbindung zur Datenbank benötigst (z.B. zum Speichern von Benutzer- oder Bestelldaten).
+2. mail.php (E-Mail-Konfiguration)
+
+Funktion: Diese Datei enthält die Einstellungen für den E-Mail-Versand, z.B. wenn du PHPMailer verwendest, um Bestätigungs-E-Mails an Benutzer zu senden. Hier werden Parameter wie der SMTP-Server, der Port, der Benutzername und das Passwort festgelegt.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+
+$mail = new PHPMailer(true);
+
+//Server-Einstellungen
+$mail->isSMTP();
+$mail->Host       = 'smtp.gmail.com';  // Setze den SMTP-Server (z.B. Gmail)
+$mail->SMTPAuth   = true;
+$mail->Username   = getenv('MAIL_USER');  // SMTP-Benutzername
+$mail->Password   = getenv('MAIL_PASS');  // SMTP-Passwort
+$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+$mail->Port       = 587;  // SMTP-Port
+
+// Absender und Empfänger setzen
+$mail->setFrom('shop@example.com', 'DIY Webshop');
+$mail->addAddress('kunde@example.com', 'Kunde');
+Warum das wichtig ist: Du brauchst diese Datei, um Benachrichtigungen, Bestellbestätigungen oder Passwort-Reset-Mails zu verschicken. PHPMailer ist eine beliebte Lösung für den Versand von E-Mails in PHP-Projekten.
+3. auth.php (Authentifizierung)
+
+Funktion: Diese Datei verwaltet die Authentifizierungseinstellungen deines Webshops, insbesondere den Hashing-Algorithmus (z.B. SHA512, wie in den Anforderungen beschrieben). Auch Passwort-Reset-Optionen und Zwei-Faktor-Authentifizierung (2FA) könnten hier konfiguriert werden.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+// Hashing-Konfiguration
+$hashAlgorithm = 'sha512';  // Verwende SHA512 für Passwort-Hashes
+
+function hashPassword($password) {
+    return hash($hashAlgorithm, $password);
+}
+
+// Zwei-Faktor-Authentifizierung (optional)
+$use2FA = true;  // 2FA aktivieren oder deaktivieren
+Warum das wichtig ist: Diese Datei sorgt dafür, dass die Sicherheitsstandards für die Passwörter und Anmeldedaten deines Shops korrekt sind. Auch zusätzliche Sicherheitsmaßnahmen wie 2FA können hier verwaltet werden.
+4. app.php (Allgemeine Einstellungen)
+
+Funktion: Hier werden allgemeine Einstellungen für die Anwendung verwaltet, z.B. der App Name, Debugging-Einstellungen, oder die aktuelle Umgebung (production, development). Diese Datei ist nützlich, um globale Parameter für die gesamte App zu definieren.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+return [
+    'app_name' => 'DIY Webshop',
+    'debug' => true,  // Debug-Modus aktivieren
+    'env' => 'development',  // 'production' für den Live-Betrieb
+    'default_currency' => 'EUR',  // Standardwährung
+    'timezone' => 'Europe/Berlin',  // Zeitzoneneinstellung
+];
+Warum das wichtig ist: Es ist sinnvoll, globale Einstellungen an einem Ort zu haben, um sie später einfach anpassen zu können. Du kannst diese Datei leicht verändern, um z.B. von der Entwicklungs- in die Produktionsumgebung zu wechseln.
+5. payment.php (optional, Zahlungsoptionen)
+
+Funktion: Falls dein Webshop Zahlungen akzeptieren soll, werden hier die Zahlungsanbieter (z.B. PayPal, Stripe) und deren API-Schlüssel konfiguriert. Diese Datei verwaltet die Kommunikation zwischen dem Shop und den Zahlungsanbietern.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+// Stripe-Konfiguration
+$stripeApiKey = getenv('STRIPE_API_KEY');  // API-Schlüssel für Stripe
+
+// PayPal-Konfiguration
+$paypalClientID = getenv('PAYPAL_CLIENT_ID');  // Client-ID für PayPal
+$paypalSecret = getenv('PAYPAL_SECRET');  // Secret-Key für PayPal
+Warum das wichtig ist: Wenn du Zahlungen in deinem Shop integrierst, brauchst du eine saubere Trennung der Zahlungsparameter von deinem Hauptcode. Dies erleichtert auch die Verwaltung der API-Schlüssel.

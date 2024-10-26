@@ -1,0 +1,269 @@
+Funktion: Der models/-Ordner enthält die PHP-Klassen, die für den Zugriff auf die Datenbank und die Verwaltung der Daten verantwortlich sind. Jede Klasse im models/-Ordner repräsentiert in der Regel eine Datenbanktabelle (z.B. Benutzer, Produkte, Bestellungen) und enthält die Methoden, um Daten in dieser Tabelle zu manipulieren.
+
+Komplette Struktur:
+bash
+Code kopieren
+models/
+├── User.php             # Verwaltung der Benutzer (Registrierung, Login, Datenabfragen)
+├── Product.php          # Verwaltung der Produkte (Hinzufügen, Bearbeiten, Löschen, Abrufen)
+├── Order.php            # Verwaltung der Bestellungen (Erstellen, Bestelldetails abrufen)
+├── Cart.php             # Verwaltung des Warenkorbs (Artikel hinzufügen, bearbeiten)
+├── PointSystem.php      # Verwaltung des Bonuspunkte-Systems
+└── Log.php              # Protokollierung von Benutzeraktionen (Login-Logs)
+Detaillierte Erklärung der Modelle:
+1. User.php (Benutzermodell)
+
+Funktion: Dieses Modell repräsentiert die users-Tabelle in der Datenbank und enthält alle Funktionen, die für die Benutzerverwaltung benötigt werden, wie Registrierung, Login und das Abrufen von Benutzerdaten.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class User {
+    private $db;
+
+    public function __construct($pdo) {
+        $this->db = $pdo;
+    }
+
+    // Erstellt einen neuen Benutzer
+    public function createUser($email, $password) {
+        $sql = "INSERT INTO users (email, password) VALUES (:email, :password)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['email' => $email, 'password' => $password]);
+    }
+
+    // Sucht einen Benutzer anhand der E-Mail-Adresse
+    public function findUserByEmail($email) {
+        $sql = "SELECT * FROM users WHERE email = :email";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['email' => $email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Überprüft, ob ein Benutzer existiert
+    public function userExists($email) {
+        $sql = "SELECT COUNT(*) FROM users WHERE email = :email";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['email' => $email]);
+        return $stmt->fetchColumn() > 0;
+    }
+}
+Funktionen:
+
+createUser($email, $password): Erstellt einen neuen Benutzer mit verschlüsseltem Passwort in der users-Tabelle.
+findUserByEmail($email): Sucht nach einem Benutzer anhand der E-Mail-Adresse.
+userExists($email): Überprüft, ob ein Benutzer mit der angegebenen E-Mail existiert.
+2. Product.php (Produktmodell)
+
+Funktion: Dieses Modell repräsentiert die products-Tabelle und enthält alle Funktionen, die zur Verwaltung der Produkte im Webshop nötig sind. Es ermöglicht das Hinzufügen, Bearbeiten, Löschen und Abrufen von Produkten.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class Product {
+    private $db;
+
+    public function __construct($pdo) {
+        $this->db = $pdo;
+    }
+
+    // Holt alle Produkte aus der Datenbank
+    public function getAllProducts() {
+        $sql = "SELECT * FROM products";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Holt ein bestimmtes Produkt anhand der ID
+    public function findProductById($id) {
+        $sql = "SELECT * FROM products WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Fügt ein neues Produkt zur Datenbank hinzu
+    public function addProduct($name, $description, $price, $image) {
+        $sql = "INSERT INTO products (name, description, price, image) VALUES (:name, :description, :price, :image)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'name' => $name,
+            'description' => $description,
+            'price' => $price,
+            'image' => $image
+        ]);
+    }
+}
+Funktionen:
+
+getAllProducts(): Holt alle Produkte aus der products-Tabelle.
+findProductById($id): Sucht ein bestimmtes Produkt anhand seiner ID.
+addProduct($name, $description, $price, $image): Fügt ein neues Produkt zur Datenbank hinzu.
+3. Order.php (Bestellmodell)
+
+Funktion: Dieses Modell verwaltet alle Bestellvorgänge, speichert neue Bestellungen in der orders-Tabelle und ermöglicht das Abrufen der Bestelldetails für den Benutzer.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class Order {
+    private $db;
+
+    public function __construct($pdo) {
+        $this->db = $pdo;
+    }
+
+    // Erstellt eine neue Bestellung
+    public function createOrder($userId, $cartItems) {
+        $sql = "INSERT INTO orders (user_id, total_price, status) VALUES (:user_id, :total_price, 'pending')";
+        $stmt = $this->db->prepare($sql);
+        $totalPrice = $this->calculateTotal($cartItems);
+        $stmt->execute(['user_id' => $userId, 'total_price' => $totalPrice]);
+
+        // Bestellpositionen speichern
+        $orderId = $this->db->lastInsertId();
+        foreach ($cartItems as $item) {
+            $this->addOrderItem($orderId, $item);
+        }
+        return $orderId;
+    }
+
+    // Fügt Bestellpositionen hinzu
+    private function addOrderItem($orderId, $item) {
+        $sql = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, :quantity, :price)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'order_id' => $orderId,
+            'product_id' => $item['id'],
+            'quantity' => $item['quantity'],
+            'price' => $item['price']
+        ]);
+    }
+
+    // Berechnet den Gesamtpreis der Bestellung
+    private function calculateTotal($cartItems) {
+        $total = 0;
+        foreach ($cartItems as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+        return $total;
+    }
+}
+Funktionen:
+
+createOrder($userId, $cartItems): Erstellt eine neue Bestellung und speichert sie in der orders-Tabelle.
+addOrderItem($orderId, $item): Fügt jede Bestellposition zur order_items-Tabelle hinzu.
+calculateTotal($cartItems): Berechnet den Gesamtpreis der Bestellung.
+4. Cart.php (Warenkorbmodell)
+
+Funktion: Dieses Modell verwaltet den Warenkorb des Benutzers. Es ist zuständig für das Hinzufügen, Bearbeiten und Entfernen von Artikeln im Warenkorb, sowie die Berechnung des Gesamtpreises.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class Cart {
+    // Fügt ein Produkt zum Warenkorb hinzu
+    public function addToCart($productId, $quantity = 1) {
+        $_SESSION['cart'][$productId] = $quantity;
+    }
+
+    // Entfernt ein Produkt aus dem Warenkorb
+    public function removeFromCart($productId) {
+        unset($_SESSION['cart'][$productId]);
+    }
+
+    // Holt den gesamten Warenkorb
+    public function getCart() {
+        return $_SESSION['cart'] ?? [];
+    }
+
+    // Berechnet den Gesamtpreis des Warenkorbs
+    public function calculateTotal($cartItems) {
+        $total = 0;
+        foreach ($cartItems as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+        return $total;
+    }
+}
+Funktionen:
+
+addToCart($productId, $quantity): Fügt ein Produkt mit der angegebenen Menge zum Warenkorb hinzu.
+removeFromCart($productId): Entfernt ein Produkt aus dem Warenkorb.
+getCart(): Gibt den aktuellen Warenkorb zurück.
+calculateTotal($cartItems): Berechnet den Gesamtpreis des Warenkorbs.
+5. PointSystem.php (Punktesystemmodell)
+
+Funktion: Dieses Modell verwaltet das Bonuspunkte-System, das den Benutzern bei jeder Bestellung Punkte gewährt. Diese Punkte können in zukünftigen Bestellungen eingelöst werden.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class PointSystem {
+    private $db;
+
+    public function __construct($pdo) {
+        $this->db = $pdo;
+    }
+
+    // Punkte für eine Bestellung gutschreiben
+    public function addPoints($userId, $points) {
+        $sql = "UPDATE users SET points = points + :points WHERE id = :user_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['points' => $points, 'user_id' => $userId]);
+    }
+
+    // Benutzerpunkte abrufen
+    public function getUserPoints($userId) {
+        $sql = "SELECT points FROM users WHERE id = :user_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchColumn();
+    }
+}
+Funktionen:
+
+addPoints($userId, $points): Fügt dem Benutzer Punkte hinzu, z.B. für eine Bestellung.
+getUserPoints($userId): Ruft die Anzahl der gesammelten Punkte des Benutzers ab.
+6. Log.php (Protokollierungsmodell)
+
+Funktion: Dieses Modell speichert wichtige Aktionen der Benutzer (z.B. Logins, Bestellungen) in der Datenbank, um ein Aktivitätsprotokoll zu führen.
+
+Beispielinhalt:
+
+php
+Code kopieren
+<?php
+
+class Log {
+    private $db;
+
+    public function __construct($pdo) {
+        $this->db = $pdo;
+    }
+
+    // Speichert ein Login-Ereignis
+    public function logLogin($userId) {
+        $sql = "INSERT INTO logs (user_id, action, timestamp) VALUES (:user_id, 'login', NOW())";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+    }
+}
+Funktionen:
+
+logLogin($userId): Speichert einen Login-Vorgang in der logs-Tabelle.
