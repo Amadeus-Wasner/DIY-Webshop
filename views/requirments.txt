@@ -1,0 +1,163 @@
+Funktion: Der views/-Ordner enthält alle HTML-Templates und Layouts des Webshops. Diese Templates sind dafür zuständig, die Daten aus den Controllern anzuzeigen und die Benutzeroberfläche zu gestalten. Jede Seite oder Komponente des Webshops hat ein eigenes Template, das an den Controller angebunden ist.
+
+Komplette Struktur:
+bash
+Code kopieren
+views/
+├── layouts/                  # Hauptlayouts, wie Header und Footer, die auf jeder Seite verwendet werden
+│   ├── header.php                # Header-Bereich mit Navigation
+│   ├── footer.php                # Footer-Bereich mit Kontaktinformationen und Links
+│   └── sidebar.php               # Optional, Seitenleiste für Kategorien oder Filter
+│
+├── auth/                     # Views für Authentifizierungsseiten
+│   ├── login.php                 # Login-Seite
+│   └── register.php              # Registrierungsseite
+│
+├── products/                 # Produktansichten
+│   ├── index.php                 # Produktübersichtsseite mit allen Produkten
+│   └── show.php                  # Produktdetailseite für einzelne Produkte
+│
+├── cart/                     # Views für den Warenkorb
+│   └── index.php                 # Warenkorbseite mit allen hinzugefügten Artikeln
+│
+├── checkout/                 # Views für den Checkout-Prozess
+│   └── index.php                 # Checkout-Seite mit Zahlungs- und Versandinformationen
+│
+└── orders/                   # Views für Bestellübersicht und -details
+    ├── index.php                 # Bestellübersicht für alle bisherigen Bestellungen des Benutzers
+    └── show.php                  # Bestelldetailseite für eine spezifische Bestellung
+Detaillierte Erklärung der Verzeichnisse und Dateien:
+1. layouts/ (Layout-Vorlagen für den gesamten Webshop)
+
+Funktion: Der layouts/-Ordner enthält Dateien für wiederkehrende Layouts wie Header, Footer und Sidebar. Diese Layouts werden in die einzelnen Seiten integriert, um ein einheitliches Design zu gewährleisten.
+
+Dateien:
+header.php: Der Header-Bereich mit Navigationselementen, wie dem Logo, den Links zu wichtigen Seiten (Startseite, Login, Warenkorb) und eventuell einer Suchleiste.
+footer.php: Der Footer-Bereich mit Kontaktinformationen, sozialen Medien und rechtlichen Hinweisen.
+sidebar.php (optional): Eine optionale Sidebar für Kategorien oder Filteroptionen, die auf der Produktseite oder im Shop-Layout verwendet werden kann.
+Beispiel für header.php:
+
+php
+Code kopieren
+<header>
+    <div class="logo">
+        <a href="index.php">DIY Webshop</a>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="index.php">Home</a></li>
+            <li><a href="login.php">Login</a></li>
+            <li><a href="cart/index.php">Warenkorb</a></li>
+        </ul>
+    </nav>
+</header>
+2. auth/ (Authentifizierungsseiten)
+
+Funktion: Dieser Ordner enthält die Templates für die Benutzeranmeldung und Registrierung. Hier geben die Benutzer ihre Zugangsdaten ein, um sich im Webshop anzumelden oder ein Konto zu erstellen.
+
+Dateien:
+login.php: Enthält das HTML-Formular zur Benutzeranmeldung, das an den AuthController weitergeleitet wird.
+register.php: Enthält das HTML-Formular zur Benutzerregistrierung.
+Beispiel für login.php:
+
+php
+Code kopieren
+<?php include '../views/layouts/header.php'; ?>
+
+<h2>Login</h2>
+<form action="../controllers/AuthController.php?action=login" method="POST">
+    <label for="email">E-Mail</label>
+    <input type="email" name="email" required>
+    <label for="password">Passwort</label>
+    <input type="password" name="password" required>
+    <button type="submit">Login</button>
+</form>
+
+<?php include '../views/layouts/footer.php'; ?>
+3. products/ (Produktseiten)
+
+Funktion: Der products/-Ordner enthält die Templates für die Produktübersicht und die Produktdetailansicht. Hier werden die Produkte des Shops angezeigt, inklusive ihrer Beschreibung, Preis und Bild.
+
+Dateien:
+index.php: Die Produktübersichtsseite, auf der alle Produkte angezeigt werden. Benutzer können hier die einzelnen Produkte durchsuchen und zur Detailansicht wechseln.
+show.php: Die Produktdetailseite für ein spezifisches Produkt, die eine detaillierte Beschreibung und eine Option zum Hinzufügen in den Warenkorb enthält.
+Beispiel für show.php:
+
+php
+Code kopieren
+<?php include '../views/layouts/header.php'; ?>
+
+<h2><?php echo $product['name']; ?></h2>
+<p><?php echo $product['description']; ?></p>
+<p>Preis: <?php echo $product['price']; ?> €</p>
+<form action="../controllers/CartController.php?action=add" method="POST">
+    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+    <button type="submit">In den Warenkorb</button>
+</form>
+
+<?php include '../views/layouts/footer.php'; ?>
+4. cart/ (Warenkorb-Seiten)
+
+Funktion: Der cart/-Ordner enthält das Template für die Warenkorbseite, auf der die Benutzer die Artikel im Warenkorb anzeigen und bearbeiten können.
+
+Dateien:
+index.php: Zeigt alle Artikel im Warenkorb an, zusammen mit Optionen zum Bearbeiten der Anzahl oder zum Entfernen von Artikeln.
+Beispiel für cart/index.php:
+
+php
+Code kopieren
+<?php include '../views/layouts/header.php'; ?>
+
+<h2>Warenkorb</h2>
+<?php foreach ($cartItems as $item): ?>
+    <div class="cart-item">
+        <h3><?php echo $item['name']; ?></h3>
+        <p>Preis: <?php echo $item['price']; ?> €</p>
+        <p>Menge: <?php echo $item['quantity']; ?></p>
+        <a href="../controllers/CartController.php?action=remove&id=<?php echo $item['id']; ?>">Entfernen</a>
+    </div>
+<?php endforeach; ?>
+
+<?php include '../views/layouts/footer.php'; ?>
+5. checkout/ (Checkout-Seiten)
+
+Funktion: Dieser Ordner enthält die Checkout-Seite, auf der Benutzer ihre Bestellung bestätigen und ihre Zahlungsinformationen eingeben.
+
+Dateien:
+index.php: Das Haupttemplate für den Checkout, in dem die Benutzer ihre Bestellung überprüfen und die Lieferung und Zahlung abschließen können.
+Beispiel für checkout/index.php:
+
+php
+Code kopieren
+<?php include '../views/layouts/header.php'; ?>
+
+<h2>Checkout</h2>
+<form action="../controllers/CheckoutController.php?action=processOrder" method="POST">
+    <label for="address">Lieferadresse</label>
+    <input type="text" name="address" required>
+    <button type="submit">Bestellung abschließen</button>
+</form>
+
+<?php include '../views/layouts/footer.php'; ?>
+6. orders/ (Bestellseiten)
+
+Funktion: Der orders/-Ordner enthält Templates für die Bestellübersicht und die detaillierte Ansicht einzelner Bestellungen. Benutzer können hier ihre Bestellhistorie einsehen.
+
+Dateien:
+index.php: Zeigt eine Übersicht aller Bestellungen, die ein Benutzer in der Vergangenheit aufgegeben hat.
+show.php: Detaillierte Ansicht einer spezifischen Bestellung.
+Beispiel für orders/show.php:
+
+php
+Code kopieren
+<?php include '../views/layouts/header.php'; ?>
+
+<h2>Bestellung Nr. <?php echo $order['id']; ?></h2>
+<p>Gesamtpreis: <?php echo $order['total_price']; ?> €</p>
+<p>Status: <?php echo $order['status']; ?></p>
+<h3>Artikel:</h3>
+<?php foreach ($orderItems as $item): ?>
+    <p><?php echo $item['name']; ?> - <?php echo $item['quantity']; ?> x <?php echo $item['price']; ?> €</p>
+<?php endforeach; ?>
+
+<?php include '../views/layouts/footer.php'; ?>

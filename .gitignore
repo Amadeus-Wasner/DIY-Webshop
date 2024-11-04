@@ -1,0 +1,33 @@
+# Umgebungsdateien
+.env                     # Speichert sensible Informationen wie API-Schlüssel, Datenbank-Zugangsdaten
+
+# Konfigurationsdateien
+config/database.php      # Datenbankkonfiguration, falls sie sensible Informationen enthält
+
+# Node.js-Abhängigkeiten
+node_modules/            # Verzeichnis, das von npm verwaltet wird und nicht versioniert werden sollte
+
+# Composer-Abhängigkeiten
+vendor/                  # Verzeichnis, das von Composer verwaltet wird
+
+# Protokoll- und Debug-Dateien
+*.log                    # Alle Log-Dateien ausschließen
+error_log                # Fehlerprotokolle des Webservers
+
+# Betriebssystem-Dateien
+.DS_Store                # macOS-Systemdatei
+Thumbs.db                # Windows-Systemdatei
+.idea/                   # PHPStorm/JetBrains-Projektordner
+.vscode/                 # Visual Studio Code Projektordner
+
+# Cache- und temporäre Dateien
+storage/                 # Temporäre Cache-Dateien, falls das Projekt diese verwendet
+cache/                   # Falls ein Cache-Verzeichnis existiert
+tmp/                     # Temporäre Dateien, die nicht gespeichert werden müssen
+
+# Hochgeladene Dateien
+public/uploads/          # Ordner für Benutzeruploads, die nicht versioniert werden sollen
+
+# Testdateien und Testdaten
+tests/fixtures/          # Testdaten-Files oder andere Testressourcen
+coverage/                # Test-Coverage-Dateien, falls ein Coverage-Tool verwendet wird
