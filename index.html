@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DIY-Kit Webshop - Startseite</title>
+    <!-- Lokales Bootstrap CSS -->
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css" />
+    <!-- Eigenes Stylesheet -->
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        color: #343a40;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Header */
+      .navbar-custom {
+        background-color: #343a40; /* Dunkler Hintergrund */
+      }
+
+      .navbar-custom .nav-link {
+        color: #ffffff !important; /* Weiße Schrift */
+        margin-right: 15px;
+        text-decoration: none;
+        font-size: 1rem;
+      }
+
+      .navbar-custom .nav-link:hover {
+        color: #f8f9fa; /* Heller beim Hover */
+        text-decoration: underline;
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ffffff !important;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 50px 20px;
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.5),
+            rgba(0, 0, 0, 0.5)
+          ),
+          url("./assets/images/hero-background.jpg") no-repeat center center;
+        background-size: cover;
+        color: #ffffff;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        margin-bottom: 30px;
+      }
+
+      .btn-primary {
+        font-size: 1.25rem;
+        padding: 10px 20px;
+      }
+
+      /* Footer */
+      .footer {
+        background-color: #343a40;
+        color: #ffffff;
+        text-align: center;
+        padding: 10px 0;
+        margin-top: 20px;
+      }
+
+      .footer p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+      <a class="navbar-brand" href="index.html">DIY-Webshop</a>
+      <div class="ml-auto">
+        <a class="nav-link" href="views/login_view.php">Anmelden</a>
+        <a class="nav-link" href="views/register_view.php">Registrieren</a>
+        <a class="nav-link" href="views/artikeluebersicht.php">Produkte</a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>Willkommen zu deinem DIY-Kit Webshop!</h1>
+      <p>Entdecke kreative Sets für Kerzen, Gartenarbeit und mehr.</p>
+      <a href="./views/artikeluebersicht.php" class="btn btn-primary"
+        >Jetzt Produkte ansehen</a
+      >
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2024 DIY-Kit Webshop - Alle Rechte vorbehalten</p>
+    </footer>
+
+    <!-- Lokales Bootstrap JS -->
+    <script src="./assets/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

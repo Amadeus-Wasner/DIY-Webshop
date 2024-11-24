@@ -1,0 +1,62 @@
+.navbar-nav .nav-item .nav-link {
+  margin-right: 15px;
+  font-size: 16px;
+}
+
+footer {
+  background-color: #333;
+  color: #fff;
+}
+
+footer .list-inline-item a {
+  color: #bbb;
+  text-decoration: none;
+}
+
+footer .list-inline-item a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Sidebar-Styling */
+.sidebar {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.sidebar h5 {
+  font-weight: bold;
+  color: #333;
+}
+
+.sidebar ul {
+  padding-left: 0;
+}
+
+.sidebar ul li {
+  margin-bottom: 10px;
+}
+
+.sidebar ul li a {
+  color: #007bff;
+  transition: color 0.2s;
+}
+
+.sidebar ul li a:hover {
+  color: #0056b3;
+}
+
+/* Beispiel für eigene Stile */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa; /* Helles Grau für den Hintergrund */
+}
+
+.navbar {
+  margin-bottom: 20px;
+}
+
+.footer {
+  font-size: 14px;
+  color: #ccc;
+}
