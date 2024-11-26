@@ -23,13 +23,12 @@
             <div class="form-group">
                 <label for="email">Benutzername (E-Mail):</label>
                 <input 
-                    type="text" 
+                    type="email" 
                     id="email" 
                     name="email" 
                     class="form-control" 
                     required 
-                    minlength="5" 
-                    pattern=".*@.*"
+                    minlength="5"
                     title="Der Benutzername muss mindestens 5 Zeichen lang sein und ein '@' enthalten.">
             </div>
             <div class="form-group">
@@ -44,28 +43,27 @@
                     pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*\d).*"
                     title="Das Passwort muss mindestens 9 Zeichen lang sein und Großbuchstaben, Kleinbuchstaben und eine Zahl enthalten.">
             </div>
+            <!-- Verstecktes Feld für Bildschirmauflösung -->
+            <input type="hidden" id="resolution" name="resolution">
             <button type="submit" class="btn btn-primary mt-3">Login</button>
         </form>
-        <input type="hidden" id="resolution" name="resolution">
     </main>
 
     <?php include '../layouts/footer.php'; ?> <!-- Footer -->
 
-    <!-- Login-Validierung -->
-    <script src="../assets/js/login_validation.js"></script>
+    <!-- Bildschirmauflösung erfassen -->
     <script>
-    // Bildschirmauflösung erfassen und ins versteckte Feld einfügen
-    document.addEventListener("DOMContentLoaded", function () {
-        const resolutionField = document.getElementById("resolution");
+        document.addEventListener("DOMContentLoaded", function () {
+            const resolutionField = document.getElementById("resolution");
 
-        if (resolutionField) {
-            const resolution = `${window.screen.width}x${window.screen.height}`;
-            resolutionField.value = resolution;
-            console.log("Erfasste Auflösung:", resolution); // Debugging
-        } else {
-            console.error("Das Feld 'resolution' wurde nicht gefunden.");
-        }
-    });
+            if (resolutionField) {
+                const resolution = `${window.screen.width}x${window.screen.height}`;
+                resolutionField.value = resolution;
+                console.log("Bildschirmauflösung erfasst:", resolution); // Debugging
+            } else {
+                console.error("Fehler: Das Feld 'resolution' wurde nicht gefunden.");
+            }
+        });
     </script>
 </body>
 </html>

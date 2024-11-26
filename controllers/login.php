@@ -5,22 +5,36 @@ error_reporting(E_ALL);
 
 require_once '../config/db_connection.php'; // Datenbankverbindung laden
 session_start();
+// Session-Daten überprüfen
+error_log('Session User ID: ' . $_SESSION['user_id']);
+error_log('Session User Email: ' . $_SESSION['user_email']);
 
 $error = ''; // Fehlernachricht initialisieren
+
+function aktualisierePunkte($pdo, $kundenID) {
+    try {
+        // Punkte hinzufügen oder erstellen
+        $stmt = $pdo->prepare('
+            INSERT INTO Punkte (KundenID, Punkte, LetzteAktualisierung)
+            VALUES (?, 2, NOW())
+            ON DUPLICATE KEY UPDATE Punkte = Punkte + 2, LetzteAktualisierung = NOW()
+        ');
+        $stmt->execute([$kundenID]);
+
+        error_log("Punkte erfolgreich aktualisiert für KundenID: $kundenID");
+    } catch (PDOException $e) {
+        error_log('Fehler beim Punkte-Update: ' . $e->getMessage());
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']); // Benutzer-E-Mail
     $password = $_POST['password']; // Benutzer-Passwort
     $resolution = $_POST['resolution'] ?? 'Unbekannt'; // Bildschirmauflösung
-    $userAgent = $_SERVER['HTTP_USER_AGENT']; // Browser-User-Agent
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? ''; // User-Agent für Betriebssystem
 
-    // Bildschirmauflösung
-    $resolution = $_POST['resolution'] ?? 'Unbekannt';
-    error_log("Erfasste Bildschirmauflösung: " . $resolution);
-
+    // Betriebssystem erkennen
     $os = 'Unbekannt';
-    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-
     if (preg_match('/Windows/i', $userAgent)) {
         $os = 'Windows';
     } elseif (preg_match('/Macintosh|Mac OS X/i', $userAgent)) {
@@ -49,8 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['Email'];
 
                 // Bildschirmauflösung und Betriebssystem speichern
-                $updateStmt = $pdo->prepare('UPDATE Kunden SET Bildschirmauflösung = ?, Betriebssystem = ? WHERE KundenID = ?');
+                $updateStmt = $pdo->prepare('
+                    UPDATE Kunden 
+                    SET Bildschirmauflösung = ?, Betriebssystem = ? 
+                    WHERE KundenID = ?
+                ');
                 $updateStmt->execute([$resolution, $os, $user['KundenID']]);
+                error_log('Bildschirmauflösung und Betriebssystem aktualisiert.');
+
+                // Punkte-Logik ausführen
+                aktualisierePunkte($pdo, $user['KundenID']);
 
                 // Weiterleitung zum Dashboard
                 header('Location: ../views/dashboard.php');
@@ -62,46 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'E-Mail-Adresse nicht gefunden.';
         }
     } catch (PDOException $e) {
-        $error = 'Datenbankfehler: ' . $e->getMessage();
-    }
-
-    // Validierungsregeln für Benutzername und Passwort
-    $emailValid = strlen($email) >= 5 && strpos($email, '@') !== false; // E-Mail prüfen
-    $passwordValid = preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{9,}$/', $password); // Passwort prüfen
-
-    // Eingabe validieren
-    if (!$emailValid) {
-        $error = 'Der Benutzername muss mindestens 5 Zeichen lang sein und ein "@" enthalten.';
-    } elseif (!$passwordValid) {
-        $error = 'Das Passwort muss mindestens 9 Zeichen lang sein und Großbuchstaben, Kleinbuchstaben und eine Zahl enthalten.';
-    } else {
-        try {
-            $pdo = getDBConnection();
-
-            // Benutzer anhand der E-Mail-Adresse suchen
-            $stmt = $pdo->prepare('SELECT * FROM Kunden WHERE Email = ?');
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
-
-            if ($user) {
-                // Passwort prüfen
-                if (password_verify($password, $user['Passwort'])) {
-                    // Login erfolgreich: Session starten
-                    $_SESSION['user_id'] = $user['KundenID'];
-                    $_SESSION['user_email'] = $user['Email'];
-
-                    // Weiterleitung zum Dashboard
-                    header('Location: ../views/dashboard.php');
-                    exit;
-                } else {
-                    $error = 'Falsches Passwort.';
-                }
-            } else {
-                $error = 'E-Mail-Adresse nicht gefunden.';
-            }
-        } catch (PDOException $e) {
-            $error = 'Datenbankfehler: ' . $e->getMessage();
-        }
+        error_log('Datenbankfehler: ' . $e->getMessage());
+        $error = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.';
     }
 } else {
     $error = 'Ungültige Anfrage.';

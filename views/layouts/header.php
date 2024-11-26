@@ -1,5 +1,19 @@
 <?php
 session_start(); // Session starten
+require_once '../config/db_connection.php'; // Datenbankverbindung einbinden
+
+// Punkte des eingeloggten Benutzers abrufen
+$punkte = 0; // Standardwert für nicht eingeloggte Benutzer
+if (isset($_SESSION['user_id'])) {
+    try {
+        $pdo = getDBConnection();
+        $punkteStmt = $pdo->prepare('SELECT Punkte FROM Punkte WHERE KundenID = ?');
+        $punkteStmt->execute([$_SESSION['user_id']]);
+        $punkte = $punkteStmt->fetchColumn() ?? 0; // Standardwert 0, falls keine Punkte vorhanden
+    } catch (PDOException $e) {
+        $punkte = 0; // Bei Fehlern Punkte auf 0 setzen
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -23,13 +37,18 @@ session_start(); // Session starten
                     <li class="nav-item"><a class="nav-link" href="../views/home.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="../views/products.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="../views/cart_view.php">Warenkorb</a></li>
-                    <li class="nav-item">
-                        <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
-                            <a class="nav-link" href="../include/logout.php">Logout</a>
-                        <?php else: ?>
-                            <a class="nav-link" href="../views/login_view.php">Login</a>
-                        <?php endif; ?>
-                    </li>
+                    
+                    <!-- Punkteanzeige für eingeloggte Benutzer -->
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <li class="nav-item">
+                            <span class="navbar-text text-white">
+                                Punkte: <?= htmlspecialchars($punkte) ?>
+                            </span>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="../include/logout.php">Logout</a></li>
+                    <?php else: ?>
+                        <li class="nav-item"><a class="nav-link" href="../views/login_view.php">Login</a></li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
