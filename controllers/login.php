@@ -58,6 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user) {
             // Passwort prüfen
             if (password_verify($password, $user['Passwort'])) {
+
+                if ($user['FirstLogin'] == 1) {
+                    $_SESSION['user_id'] = $user['KundenID'];
+                    $_SESSION['user_email'] = $user['Email'];
+        
+                    // Weiterleitung zur Seite zum Passwort ändern
+                    header('Location: ../views/first_login.php');
+                    exit;
+                }
+
                 // Login erfolgreich: Session starten
                 $_SESSION['user_id'] = $user['KundenID'];
                 $_SESSION['user_email'] = $user['Email'];
